@@ -1,0 +1,3 @@
+langchain
+langchain-mcp-adapters
+python-dotenv
