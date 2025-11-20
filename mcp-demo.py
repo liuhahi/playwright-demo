@@ -1,11 +1,42 @@
 import asyncio
 import os
+from pathlib import Path
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
+from langchain.tools import tool
 from dotenv import load_dotenv
 
 load_dotenv()
+
+@tool
+def save_text_to_file(filename: str, content: str, directory: str = ".") -> str:
+    """
+    Save text content to a local file.
+    
+    Args:
+        filename: Name of the file to save (e.g., 'menu_items.txt')
+        content: Text content to save
+        directory: Directory to save the file in (default: current directory)
+    
+    Returns:
+        Success message with file path
+    """
+    try:
+        # Create directory if it doesn't exist
+        dir_path = Path(directory)
+        dir_path.mkdir(parents=True, exist_ok=True)
+        
+        # Create full file path
+        file_path = dir_path / filename
+        
+        # Write content to file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        return f"Successfully saved content to {file_path.absolute()}"
+    except Exception as e:
+        return f"Error saving file: {str(e)}"
 
 async def main():
     client = MultiServerMCPClient(
@@ -17,14 +48,18 @@ async def main():
         }
     )
     
-    tools = await client.get_tools()
+    playwright_tools = await client.get_tools()
+    
+    # Combine Playwright tools with our file system tool
+    all_tools = playwright_tools + [save_text_to_file]
+    
     llm = ChatOpenAI(
         model="gpt-4o",
         api_key=os.getenv("OPENAI_API_KEY")
     )
     agent = create_agent(
         llm,
-        tools
+        all_tools
     )
     
     username = os.getenv("USER_NAME")
@@ -39,7 +74,7 @@ async def main():
     4. Fill in verification code field with '{verification_code}' (use simple fill method)
     5. Click Sign In button 
     6. Wait for the dashboard page to load completely
-    7. After successful login to the dashboard, get the page snapshot and identify all navigation menu items. Create a text file called 'menu_items.txt' that contains all the dashboard navigation items."""
+    7. After successful login to the dashboard, get the page snapshot and identify all navigation menu items on the left. Save the menu items to 'menu_items.txt' using the save_text_to_file tool."""
 
     try:
         response = await agent.ainvoke(
