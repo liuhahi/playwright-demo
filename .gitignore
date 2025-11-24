@@ -2,3 +2,12 @@ venv
 .env
 .claude
 menu_items.txt
+__pycache__
+test_output
+test_output_github
+test_output_neo4j
+test_pipeline
+test_output_real_neo4j
+test_run
+web
+.DS_Store

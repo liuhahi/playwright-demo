@@ -1,3 +1,13 @@
 langchain
 langchain-mcp-adapters
 python-dotenv
+openai
+requests
+playwright
+pyyaml
+pydantic
+beautifulsoup4
+pandas
+openpyxl
+pillow
+neo4j
